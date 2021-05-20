@@ -1,5 +1,7 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
+using Windows.Media.Control;
 
 class Program
 {
@@ -33,6 +35,17 @@ class Program
             }
         });
     }
+    static void ClearActivity()
+    {
+
+        activityManager.ClearActivity(result =>
+        {
+            if (result != Discord.Result.Ok)
+            {
+                Console.WriteLine("Clear Activity {0}", result);
+            }
+        });
+    }
 
     static string ConvertToImageKey(string text)
     {
@@ -44,7 +57,7 @@ class Program
         };
     }
 
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         var applicationClientID = "844635364667818024";
         var discord = new Discord.Discord(Int64.Parse(applicationClientID), (UInt64)Discord.CreateFlags.Default);
@@ -57,7 +70,18 @@ class Program
             {
                 if (i % 900 == 0)
                 {
-                    UpdateActivity("Wanda Vision S1:F9", "Disney+", 300);
+                    // from https://stackoverflow.com/a/63099881:
+                    var gsmtcsm = await GetSystemMediaTransportControlsSessionManager();
+                    var session = gsmtcsm.GetCurrentSession();
+                    if (session != null)
+                    {
+                        var mediaProperties = await GetMediaProperties(session);
+                        UpdateActivity(mediaProperties.Title, "Disney+", 30);
+                    }
+                    else
+                    {
+                        ClearActivity();
+                    }
                 }
                 discord.RunCallbacks();
                 Thread.Sleep(1000 / 60);
@@ -68,4 +92,10 @@ class Program
             discord.Dispose();
         }
     }
+
+    private static async Task<GlobalSystemMediaTransportControlsSessionManager> GetSystemMediaTransportControlsSessionManager() =>
+        await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+
+    private static async Task<GlobalSystemMediaTransportControlsSessionMediaProperties> GetMediaProperties(GlobalSystemMediaTransportControlsSession session) =>
+        await session.TryGetMediaPropertiesAsync();
 }
