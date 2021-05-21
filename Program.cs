@@ -35,17 +35,6 @@ class Program
             }
         });
     }
-    static void ClearActivity()
-    {
-
-        activityManager.ClearActivity(result =>
-        {
-            if (result != Discord.Result.Ok)
-            {
-                Console.WriteLine("Clear Activity {0}", result);
-            }
-        });
-    }
 
     static string ConvertToImageKey(string text)
     {
@@ -67,9 +56,7 @@ class Program
     static async Task Main(string[] args)
     {
         var applicationClientID = "844635364667818024";
-        var discord = new Discord.Discord(Int64.Parse(applicationClientID), (UInt64)Discord.CreateFlags.Default);
-
-        activityManager = discord.GetActivityManager();
+        Discord.Discord discord = null;
 
         try
         {
@@ -90,15 +77,28 @@ class Program
                             resultingPosition = 0;
                         }
                         // Console.WriteLine(totalSeconds + " at: " + lastUpdate + " with delay of: " + updateAge + " resulting position: " + resultingPosition);
+
+                        if (discord == null)
+                        {
+                            discord = new Discord.Discord(Int64.Parse(applicationClientID), (UInt64)Discord.CreateFlags.Default);
+                            activityManager = discord.GetActivityManager();
+                        }
                         UpdateActivity((await session.TryGetMediaPropertiesAsync()).Title, "Media", resultingPosition);
                     }
                     else
                     {
-                        ClearActivity();
+                        if (discord != null)
+                        {
+                            discord.Dispose();
+                            discord = null;
+                        }
                     }
                 }
 
-                discord.RunCallbacks();
+                if (discord != null)
+                {
+                    discord.RunCallbacks();
+                }
                 Thread.Sleep(1000 / 60);
             }
         }
