@@ -57,7 +57,7 @@ class Program
         };
     }
 
-    static async Task Main(string[] args)
+    static Task Main(string[] args)
     {
         var applicationClientID = "844635364667818024";
         var discord = new Discord.Discord(Int64.Parse(applicationClientID), (UInt64)Discord.CreateFlags.Default);
@@ -70,19 +70,19 @@ class Program
             {
                 if (i % 900 == 0)
                 {
-                    // from https://stackoverflow.com/a/63099881:
-                    var gsmtcsm = await GetSystemMediaTransportControlsSessionManager();
-                    var session = gsmtcsm.GetCurrentSession();
-                    if (session != null)
+                    GetMediaProperties().ContinueWith(task =>
                     {
-                        var mediaProperties = await GetMediaProperties(session);
-                        UpdateActivity(mediaProperties.Title, "Disney+", 30);
-                    }
-                    else
-                    {
-                        ClearActivity();
-                    }
+                        if (task.Result != null)
+                        {
+                            UpdateActivity(task.Result.Title, "Disney+", 30);
+                        }
+                        else
+                        {
+                            ClearActivity();
+                        }
+                    });
                 }
+
                 discord.RunCallbacks();
                 Thread.Sleep(1000 / 60);
             }
@@ -93,9 +93,15 @@ class Program
         }
     }
 
-    private static async Task<GlobalSystemMediaTransportControlsSessionManager> GetSystemMediaTransportControlsSessionManager() =>
-        await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-
-    private static async Task<GlobalSystemMediaTransportControlsSessionMediaProperties> GetMediaProperties(GlobalSystemMediaTransportControlsSession session) =>
-        await session.TryGetMediaPropertiesAsync();
+    static async Task<GlobalSystemMediaTransportControlsSessionMediaProperties> GetMediaProperties()
+    {
+        // from https://stackoverflow.com/a/63099881:
+        var gsmtcsm = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+        var session = gsmtcsm.GetCurrentSession();
+        if (session != null)
+        {
+            return await session.TryGetMediaPropertiesAsync();
+        }
+        return null;
+    }
 }
