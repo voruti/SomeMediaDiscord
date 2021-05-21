@@ -49,7 +49,7 @@ class Program
 
     static string ConvertToImageKey(string text)
     {
-        if (text.Contains("Disney+"))
+        if (text.EndsWith("Disney+"))
         {
             return "disneyplus";
         }
