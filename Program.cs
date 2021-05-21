@@ -57,7 +57,7 @@ class Program
         };
     }
 
-    static Task Main(string[] args)
+    static async Task Main(string[] args)
     {
         var applicationClientID = "844635364667818024";
         var discord = new Discord.Discord(Int64.Parse(applicationClientID), (UInt64)Discord.CreateFlags.Default);
@@ -70,17 +70,20 @@ class Program
             {
                 if (i % 900 == 0)
                 {
-                    GetMediaProperties().ContinueWith(task =>
+                    var session = await GetSession();
+                    if (session != null)
                     {
-                        if (task.Result != null)
-                        {
-                            UpdateActivity(task.Result.Title, "Disney+", 30);
-                        }
-                        else
-                        {
-                            ClearActivity();
-                        }
-                    });
+                        var timelineProperties = session.GetTimelineProperties();
+                        var lastUpdate = timelineProperties.LastUpdatedTime;
+                        var updateAge = DateTimeOffset.Now.ToUnixTimeSeconds() - lastUpdate.ToUnixTimeSeconds();
+                        var resultingPosition = Convert.ToInt64(timelineProperties.Position.TotalSeconds) + updateAge;
+                        // Console.WriteLine(timelineProperties.Position.TotalSeconds + " at: " + lastUpdate + " with delay of: " + updateAge + " resulting position: " + resultingPosition);
+                        UpdateActivity((await session.TryGetMediaPropertiesAsync()).Title, "Disney+", resultingPosition);
+                    }
+                    else
+                    {
+                        ClearActivity();
+                    }
                 }
 
                 discord.RunCallbacks();
@@ -93,15 +96,8 @@ class Program
         }
     }
 
-    static async Task<GlobalSystemMediaTransportControlsSessionMediaProperties> GetMediaProperties()
+    static async Task<GlobalSystemMediaTransportControlsSession> GetSession()
     {
-        // from https://stackoverflow.com/a/63099881:
-        var gsmtcsm = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-        var session = gsmtcsm.GetCurrentSession();
-        if (session != null)
-        {
-            return await session.TryGetMediaPropertiesAsync();
-        }
-        return null;
+        return (await GlobalSystemMediaTransportControlsSessionManager.RequestAsync()).GetCurrentSession();
     }
 }
