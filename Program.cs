@@ -104,7 +104,10 @@ class Program
         }
         finally
         {
-            discord.Dispose();
+            if (discord != null)
+            {
+                discord.Dispose();
+            }
         }
     }
 
