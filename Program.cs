@@ -49,6 +49,10 @@ class Program
 
     static string ConvertToImageKey(string text)
     {
+        if (text.Contains("Disney+"))
+        {
+            return "disneyplus";
+        }
         return text switch
         {
             "Netflix" => "netflix",
