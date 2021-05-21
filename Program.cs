@@ -78,9 +78,14 @@ class Program
                     {
                         var timelineProperties = session.GetTimelineProperties();
                         var lastUpdate = timelineProperties.LastUpdatedTime;
+                        var totalSeconds = Convert.ToInt64(timelineProperties.Position.TotalSeconds);
                         var updateAge = DateTimeOffset.Now.ToUnixTimeSeconds() - lastUpdate.ToUnixTimeSeconds();
-                        var resultingPosition = Convert.ToInt64(timelineProperties.Position.TotalSeconds) + updateAge;
-                        // Console.WriteLine(timelineProperties.Position.TotalSeconds + " at: " + lastUpdate + " with delay of: " + updateAge + " resulting position: " + resultingPosition);
+                        var resultingPosition = totalSeconds + updateAge;
+                        if (lastUpdate.ToUnixTimeSeconds() <= 0)
+                        {
+                            resultingPosition = 0;
+                        }
+                        // Console.WriteLine(totalSeconds + " at: " + lastUpdate + " with delay of: " + updateAge + " resulting position: " + resultingPosition);
                         UpdateActivity((await session.TryGetMediaPropertiesAsync()).Title, "Media", resultingPosition);
                     }
                     else
