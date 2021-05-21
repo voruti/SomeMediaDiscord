@@ -53,6 +53,9 @@ class Program
         {
             "Netflix" => "netflix",
             "Disney+" => "disneyplus",
+            "Firefox" => "firefox",
+            "Microsoft Edge" => "edge",
+            "VLC" => "vlc",
             _ => "default"
         };
     }
@@ -78,7 +81,7 @@ class Program
                         var updateAge = DateTimeOffset.Now.ToUnixTimeSeconds() - lastUpdate.ToUnixTimeSeconds();
                         var resultingPosition = Convert.ToInt64(timelineProperties.Position.TotalSeconds) + updateAge;
                         // Console.WriteLine(timelineProperties.Position.TotalSeconds + " at: " + lastUpdate + " with delay of: " + updateAge + " resulting position: " + resultingPosition);
-                        UpdateActivity((await session.TryGetMediaPropertiesAsync()).Title, "Disney+", resultingPosition);
+                        UpdateActivity((await session.TryGetMediaPropertiesAsync()).Title, "Media", resultingPosition);
                     }
                     else
                     {
