@@ -74,7 +74,7 @@ class Program
                 if (i % 900 == 0)
                 {
                     var session = await GetSession();
-                    if (session != null)
+                    if (session != null && session.GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
                     {
                         var timelineProperties = session.GetTimelineProperties();
                         var lastUpdate = timelineProperties.LastUpdatedTime;
