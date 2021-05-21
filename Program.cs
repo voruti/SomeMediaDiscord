@@ -7,22 +7,22 @@ class Program
 {
     static Discord.ActivityManager activityManager;
 
-    static void UpdateActivity(string content, string program, long progress)
+    static void UpdateActivity(string textA, string textB, long progress)
     {
         var activity = new Discord.Activity
         {
-            State = content,
-            Details = program,
+            State = textA,
+            Details = textB,
             Timestamps =
             {
                 Start = DateTimeOffset.Now.ToUnixTimeSeconds() - progress
             },
             Assets =
             {
-                LargeImage = ConvertToImageKey(program),
-                LargeText = program,
-                SmallImage = ConvertToImageKey(content),
-                SmallText = content
+                LargeImage = ConvertToImageKey(textB),
+                LargeText = textB,
+                SmallImage = ConvertToImageKey(textA),
+                SmallText = textA
             },
             Instance = false
         };
